@@ -1,0 +1,14 @@
+1. ask for adding the files that are not untracted by  git to gihub and also show those files  that are untracted
+    show the files in terminal like that for e.g
+output in terminal => { main.js : U, tiger.html : U, volo.css : M, and so on ... } , if user want to choose manual by typing use this  inquirer-autocomplete-standalone and ask before adding files manually or auto (y for auto n for manual)
+also show the modified file, 
+2. and give some commit message that are meaningful 
+
+3. ask for pushing the source to main branch or other also check the remote branch exist or nor 
+
+4. search for user's root project and find those files that should be in .gitingnore file { if .gitignore files exists ask for user to add files to .gitignore by selecting    } use Checkbox - {type: 'checkbox'}
+
+npm packages 
+use chalk for adding color to the teminal output 
+use simple-git for interracting with git repo
+use  inquirerjs 
