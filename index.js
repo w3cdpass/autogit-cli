@@ -157,7 +157,7 @@ async function pushToBranch() {
 
     // Display the final message with formatted output
     console.log(
-      `\n{ ${chalk.white('Branch')}: "${chalk.green(branch)}", ${chalk.white('SHA')}: "${chalk.green(sha)}", ${chalk.white('Commit')}: "${chalk.green(commitMessage)}" }`
+      `{ ${chalk.white('Branch')}: "${chalk.green(branch)}", ${chalk.white('SHA')}: "${chalk.green(sha)}", ${chalk.white('Commit')}: "${chalk.green(commitMessage)}" }`
     );
   } catch (error) {
     spinner.fail(chalk.red('Failed to push code to GitHub.'));
