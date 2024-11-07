@@ -3,8 +3,8 @@ import chalk from 'chalk';
 import simpleGit from 'simple-git';
 import path from 'path';
 import fs from 'fs';
-import 'inquirer-autocomplete-standalone';
 import ora from 'ora';
+
 const git = simpleGit();
 
 async function checkGitignore() {
@@ -19,6 +19,8 @@ async function checkGitignore() {
   ];
 
   let createGitignore = false;
+
+  // Prompt to create .gitignore if it doesn’t exist
   if (!fs.existsSync(gitignorePath)) {
     const { create } = await inquirer.prompt({
       type: 'confirm',
@@ -29,6 +31,7 @@ async function checkGitignore() {
     createGitignore = create;
   }
 
+  // Gather existing entries if .gitignore exists, otherwise initialize to empty
   const existingEntries = createGitignore
     ? []
     : fs.readFileSync(gitignorePath, 'utf-8').split('\n').filter(Boolean);
@@ -36,6 +39,7 @@ async function checkGitignore() {
   const newEntries = commonIgnoredFiles.filter(entry => !existingEntries.includes(entry));
   if (newEntries.length === 0) return console.log(chalk.blue('.gitignore is already up-to-date.'));
 
+  // Allow user to select files to add to .gitignore
   const { includeInGitignore } = await inquirer.prompt({
     type: 'checkbox',
     name: 'includeInGitignore',
@@ -59,12 +63,9 @@ async function checkGitignore() {
 
 async function getGitStatus() {
   const status = await git.status();
-  const untrackedFiles = status.not_added;
-  const modifiedFiles = status.modified;
-
   return {
-    untrackedFiles,
-    modifiedFiles,
+    untrackedFiles: status.not_added,
+    modifiedFiles: status.modified,
   };
 }
 
@@ -141,7 +142,7 @@ async function pushToBranch() {
     return;
   }
 
-    const spinner = ora({
+  const spinner = ora({
     text: `Pushing code to branch "${branch}"...`,
     color: 'cyan',
     spinner: 'dots',
@@ -150,18 +151,17 @@ async function pushToBranch() {
   try {
     await git.push('origin', branch);
     spinner.succeed(chalk.green(`Successfully pushed to branch "${branch}".`));
+
+    // Retrieve the latest commit SHA and message
+    const log = await git.log({ maxCount: 1 });
+    const latestCommit = log.latest;
+    const commitInfo = `[${latestCommit.hash.slice(0, 7)}] ${latestCommit.message}`;
+
+    console.log(chalk.green(`\nPushed commit: ${commitInfo}`));
   } catch (error) {
     spinner.fail(chalk.red('Failed to push code to GitHub.'));
     console.error(chalk.red(error.message));
   }
-  
-
-
-  
-
-  
-  // await git.push('origin', branch);
-  // console.log(chalk.green(`Pushed to branch "${branch}".`));
 }
 
 async function main() {
@@ -169,6 +169,7 @@ async function main() {
     // Start with checking .gitignore
     await checkGitignore();
 
+    // Get untracked and modified files
     const { untrackedFiles, modifiedFiles } = await getGitStatus();
 
     console.log(chalk.yellow('Untracked Files:'), formatFiles(untrackedFiles, 'U'));
@@ -180,7 +181,7 @@ async function main() {
     await commitChanges();
     await pushToBranch();
   } catch (err) {
-    console.error(chalk.red(err));
+    console.error(chalk.red(`An error occurred: ${err.message}`));
   }
 }
 
