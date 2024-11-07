@@ -20,7 +20,6 @@ async function checkGitignore() {
 
   let createGitignore = false;
 
-  // Prompt to create .gitignore if it doesn’t exist
   if (!fs.existsSync(gitignorePath)) {
     const { create } = await inquirer.prompt({
       type: 'confirm',
@@ -31,7 +30,6 @@ async function checkGitignore() {
     createGitignore = create;
   }
 
-  // Gather existing entries if .gitignore exists, otherwise initialize to empty
   const existingEntries = createGitignore
     ? []
     : fs.readFileSync(gitignorePath, 'utf-8').split('\n').filter(Boolean);
@@ -39,7 +37,6 @@ async function checkGitignore() {
   const newEntries = commonIgnoredFiles.filter(entry => !existingEntries.includes(entry));
   if (newEntries.length === 0) return console.log(chalk.blue('.gitignore is already up-to-date.'));
 
-  // Allow user to select files to add to .gitignore
   const { includeInGitignore } = await inquirer.prompt({
     type: 'checkbox',
     name: 'includeInGitignore',
@@ -150,14 +147,20 @@ async function pushToBranch() {
 
   try {
     await git.push('origin', branch);
-    spinner.succeed(chalk.green(`Successfully pushed to branch "${branch}".`));
+    spinner.stop();
 
     // Retrieve the latest commit SHA and message
     const log = await git.log({ maxCount: 1 });
     const latestCommit = log.latest;
-    const commitInfo = `[${latestCommit.hash.slice(0, 7)}] ${latestCommit.message}`;
+    const sha = latestCommit.hash.slice(0, 7);
+    const commitMessage = latestCommit.message;
 
-    console.log(chalk.green(`Pushed commit: ${commitInfo}`));
+    // Display the final message with branch, SHA, and commit
+    console.log(
+      chalk.green(
+        `\n{ Branch: "${branch}", SHA: "${sha}", Commit: "${commitMessage}" }`
+      )
+    );
   } catch (error) {
     spinner.fail(chalk.red('Failed to push code to GitHub.'));
     console.error(chalk.red(error.message));
@@ -166,10 +169,8 @@ async function pushToBranch() {
 
 async function main() {
   try {
-    // Start with checking .gitignore
     await checkGitignore();
 
-    // Get untracked and modified files
     const { untrackedFiles, modifiedFiles } = await getGitStatus();
 
     console.log(chalk.yellow('Untracked Files:'), formatFiles(untrackedFiles, 'U'));
