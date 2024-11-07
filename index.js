@@ -155,11 +155,9 @@ async function pushToBranch() {
     const sha = latestCommit.hash.slice(0, 7);
     const commitMessage = latestCommit.message;
 
-    // Display the final message with branch, SHA, and commit
+    // Display the final message with formatted output
     console.log(
-      chalk.green(
-        `\n{ Branch: "${branch}", SHA: "${sha}", Commit: "${commitMessage}" }`
-      )
+      `\n{ ${chalk.white('Branch')}: "${chalk.green(branch)}", ${chalk.white('SHA')}: "${chalk.green(sha)}", ${chalk.white('Commit')}: "${chalk.green(commitMessage)}" }`
     );
   } catch (error) {
     spinner.fail(chalk.red('Failed to push code to GitHub.'));
