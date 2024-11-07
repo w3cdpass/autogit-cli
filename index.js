@@ -149,9 +149,9 @@ async function pushToBranch() {
 
   try {
     await git.push('origin', branch);
-    spinner.succeed(`Successfully pushed to branch "${branch}".`);
+    spinner.succeed(chalk.green(`Successfully pushed to branch "${branch}".`));
   } catch (error) {
-    spinner.fail('Failed to push code to GitHub.');
+    spinner.fail(chalk.red('Failed to push code to GitHub.'));
     console.error(chalk.red(error.message));
   }
   
