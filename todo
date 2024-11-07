@@ -13,4 +13,8 @@ use chalk for adding color to the teminal output
 use simple-git for interracting with git repo
 use  inquirerjs 
 
+
 // update the .gitignore file that it ask for user for once not again and again 
+
+1.don't show the commited message in console 
+2.don't show  the tick icon when asking the question show ? icon instead 
