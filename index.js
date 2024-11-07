@@ -141,6 +141,9 @@ async function pushToBranch() {
     return;
   }
 
+
+  
+
   await git.push('origin', branch);
   console.log(chalk.green(`Pushed to branch "${branch}".`));
 }
