@@ -35,26 +35,25 @@ async function checkGitignore() {
     : fs.readFileSync(gitignorePath, 'utf-8').split('\n').filter(Boolean);
 
   const newEntries = commonIgnoredFiles.filter(entry => !existingEntries.includes(entry));
-  if (newEntries.length === 0) return console.log(chalk.blue('.gitignore is already up-to-date.'));
 
-  const { includeInGitignore } = await inquirer.prompt({
-    type: 'checkbox',
-    name: 'includeInGitignore',
-    message: 'Select files to add to .gitignore:',
-    choices: newEntries,
-  });
+  if (newEntries.length > 0) {
+    const { includeInGitignore } = await inquirer.prompt({
+      type: 'checkbox',
+      name: 'includeInGitignore',
+      message: 'Select files to add to .gitignore:',
+      choices: newEntries,
+    });
 
-  if (includeInGitignore.length) {
-    const content = includeInGitignore.join('\n');
-    if (createGitignore) {
-      fs.writeFileSync(gitignorePath, content);
-      console.log(chalk.green('Created .gitignore with selected entries.'));
-    } else {
-      fs.appendFileSync(gitignorePath, `\n${content}`);
-      console.log(chalk.green('Updated .gitignore.'));
+    if (includeInGitignore.length) {
+      const content = includeInGitignore.join('\n');
+      if (createGitignore) {
+        fs.writeFileSync(gitignorePath, content);
+        console.log(chalk.green('Created .gitignore with selected entries.'));
+      } else {
+        fs.appendFileSync(gitignorePath, `\n${content}`);
+        console.log(chalk.green('Updated .gitignore.'));
+      }
     }
-  } else {
-    console.log(chalk.yellow('No new entries were added to .gitignore.'));
   }
 }
 
@@ -64,10 +63,6 @@ async function getGitStatus() {
     untrackedFiles: status.not_added,
     modifiedFiles: status.modified,
   };
-}
-
-function formatFiles(files, type) {
-  return files.map(file => `${file}: ${type}`).join(', ');
 }
 
 async function promptForAddingFiles(files) {
@@ -80,7 +75,20 @@ async function promptForAddingFiles(files) {
 
   if (addMethod) {
     await git.add(files);
-    console.log(chalk.green('Files added automatically.'));
+    const stats = await Promise.all(
+      files.map(async (file) => {
+        const diff = await git.diffSummary([file]);
+        const fileDiff = diff.files.find(f => f.file === file);
+        
+        // Check if fileDiff exists before accessing its properties
+        if (fileDiff) {
+          return `${file} [+${fileDiff.insertions}] [-${fileDiff.deletions}]`;
+        } else {
+          return `${file} [No changes found]`;
+        }
+      })
+    );
+    console.log(chalk.green(`Adding files:\n${stats.join('\n')}`));
   } else {
     const { selectedFiles } = await inquirer.prompt({
       type: 'checkbox',
@@ -90,9 +98,23 @@ async function promptForAddingFiles(files) {
       loop: false,
     });
     await git.add(selectedFiles);
-    console.log(chalk.green('Files added manually.'));
+    const stats = await Promise.all(
+      selectedFiles.map(async (file) => {
+        const diff = await git.diffSummary([file]);
+        const fileDiff = diff.files.find(f => f.file === file);
+        
+        // Check if fileDiff exists before accessing its properties
+        if (fileDiff) {
+          return `${file} [+${fileDiff.insertions}] [-${fileDiff.deletions}]`;
+        } else {
+          return `${file} [No changes found]`;
+        }
+      })
+    );
+    console.log(chalk.green(`Adding files:\n${stats.join('\n')}`));
   }
 }
+
 
 async function commitChanges() {
   const commitMessages = [
@@ -111,10 +133,10 @@ async function commitChanges() {
   });
 
   await git.commit(commitMessage);
-  console.log(chalk.green(`Committed with message: "${commitMessage}"`));
+  return commitMessage; // Return the message for final display only
 }
 
-async function pushToBranch() {
+async function pushToBranch(commitMessage) {
   const remotes = await git.getRemotes();
   const remoteNames = remotes.map(remote => remote.name);
 
@@ -153,11 +175,10 @@ async function pushToBranch() {
     const log = await git.log({ maxCount: 1 });
     const latestCommit = log.latest;
     const sha = latestCommit.hash.slice(0, 7);
-    const commitMessage = latestCommit.message;
 
     // Display the final message with formatted output
     console.log(
-      `{ ${chalk.white('Branch')}: "${chalk.green(branch)}", ${chalk.white('SHA')}: "${chalk.green(sha)}", ${chalk.white('Commit')}: "${chalk.green(commitMessage)}" }`
+      `\n{ ${chalk.white('Branch')}: "${chalk.green(branch)}", ${chalk.white('SHA')}: "${chalk.green(sha)}", ${chalk.white('Commit')}: "${chalk.green(commitMessage)}" }`
     );
   } catch (error) {
     spinner.fail(chalk.red('Failed to push code to GitHub.'));
@@ -171,14 +192,17 @@ async function main() {
 
     const { untrackedFiles, modifiedFiles } = await getGitStatus();
 
-    console.log(chalk.yellow('Untracked Files:'), formatFiles(untrackedFiles, 'U'));
-    console.log(chalk.yellow('Modified Files:'), formatFiles(modifiedFiles, 'M'));
+    const filesToDisplay = [
+      ...modifiedFiles,
+      ...untrackedFiles.filter(file => fs.existsSync(file)),
+    ];
+    
+    if (filesToDisplay.length > 0) {
+      await promptForAddingFiles(filesToDisplay);
+    }
 
-    const allFiles = [...untrackedFiles, ...modifiedFiles];
-    await promptForAddingFiles(allFiles);
-
-    await commitChanges();
-    await pushToBranch();
+    const commitMessage = await commitChanges();
+    await pushToBranch(commitMessage);
   } catch (err) {
     console.error(chalk.red(`An error occurred: ${err.message}`));
   }
