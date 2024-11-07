@@ -74,24 +74,28 @@ async function promptForAddingFiles(files) {
   });
 
   const getFileDiffStats = async (file) => {
-    // Get the diff for the specific file
-    const diff = await git.diff([file]);
+    let insertions = 0;
+    let deletions = 0;
 
-    // Count the number of insertions and deletions
-    const insertions = (diff.match(/\+/g) || []).length;
-    const deletions = (diff.match(/-/g) || []).length;
+    // Get unstaged changes (working directory)
+    const unstagedDiff = await git.diff([file]);
+    insertions += (unstagedDiff.match(/\n\+/g) || []).length;
+    deletions += (unstagedDiff.match(/\n-/g) || []).length;
 
-    return `${file} [+${insertions}] [-${deletions}]`;
+    // Get staged changes (index)
+    const stagedDiff = await git.diff(['--cached', file]);
+    insertions += (stagedDiff.match(/\n\+/g) || []).length;
+    deletions += (stagedDiff.match(/\n-/g) || []).length;
+
+    return `${chalk.white(file)} [${chalk.green(`+${insertions}`)} ${chalk.red(`-${deletions}`)}]`;
   };
 
   if (addMethod) {
     await git.add(files);
     const stats = await Promise.all(
-      files.map(async (file) => {
-        return await getFileDiffStats(file);
-      })
+      files.map(async (file) => await getFileDiffStats(file))
     );
-    console.log(chalk.green(`Adding files:\n${stats.join('\n')}`));
+    console.log(`${chalk.white('Adding files:')}\n${stats.join(', ')}`);
   } else {
     const { selectedFiles } = await inquirer.prompt({
       type: 'checkbox',
@@ -102,11 +106,9 @@ async function promptForAddingFiles(files) {
     });
     await git.add(selectedFiles);
     const stats = await Promise.all(
-      selectedFiles.map(async (file) => {
-        return await getFileDiffStats(file);
-      })
+      selectedFiles.map(async (file) => await getFileDiffStats(file))
     );
-    console.log(chalk.green(`Adding files:\n${stats.join('\n')}`));
+    console.log(`${chalk.white('Adding files:')}\n${stats.join(', ')}`);
   }
 }
 
