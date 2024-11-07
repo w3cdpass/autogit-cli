@@ -5,6 +5,7 @@
     "inquirer": "^12.0.1",
     "inquirer-autocomplete-standalone": "^0.8.1",
     "inquirer-search-checkbox": "^1.0.0",
+    "ora": "^8.1.1",
     "simple-git": "^3.27.0"
   },
   "name": "autogit-cli",
@@ -14,7 +15,6 @@
   "bin": {
     "autogit": "bin/cmd.js"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

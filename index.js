@@ -142,10 +142,18 @@ async function pushToBranch() {
   }
 
 
-  
+  try {
+    console.log(chalk.cyan(`Pushing to branch "${branch}"...`));
+    await git.push('origin', branch);
+    console.log(chalk.green(`Successfully pushed to branch "${branch}".`));
+  } catch (error) {
+    console.log(chalk.red('Failed to push code to GitHub.'));
+    console.error(chalk.red(error.message));
+  }
 
-  await git.push('origin', branch);
-  console.log(chalk.green(`Pushed to branch "${branch}".`));
+
+  // await git.push('origin', branch);
+  // console.log(chalk.green(`Pushed to branch "${branch}".`));
 }
 
 async function main() {
