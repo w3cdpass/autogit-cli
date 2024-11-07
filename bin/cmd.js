@@ -1,66 +1,32 @@
-import inquirer from 'inquirer';
-import chalk from 'chalk';
-import simpleGit from 'simple-git';
-import path from 'path';
-import fs from 'fs';
-import ora from 'ora';
-import 'inquirer-autocomplete-standalone';
+import inquirer from "inquirer";
 
-const git = simpleGit();
+// import inquirer from '../dist/esm/index.js';
 
-async function pushToBranch() {
-  const remotes = await git.getRemotes();
-  const remoteNames = remotes.map(remote => remote.name);
-
-  if (remoteNames.length === 0) {
-    console.log(chalk.red('No remote repository found.'));
-    return;
-  }
-
-  const { branch } = await inquirer.prompt({
+const questions = [
+  {
     type: 'input',
-    name: 'branch',
-    message: 'Enter the branch name to push to:',
-    default: 'main',
+    name: 'tvShow',
+    message: "What's your favorite TV show?",
+  },
+  {
+    type: 'confirm',
+    name: 'askAgain',
+    message: 'Want to enter another TV show favorite (just hit enter for YES)?',
+    default: true,
+  },
+];
+
+function ask() {
+  const output = [];
+
+  inquirer.prompt(questions).then((answers) => {
+    output.push(answers.tvShow);
+    if (answers.askAgain) {
+      ask();
+    } else {
+      console.log('Your favorite TV Shows:', output.join(', '));
+    }
   });
-
-  const exists = await git.branch(['-r']).then(data =>
-    Object.keys(data.branches).some(r => r.includes(branch))
-  );
-
-  if (!exists) {
-    console.log(chalk.red(`Branch "${branch}" does not exist on remote.`));
-    return;
-  }
-
-  // Start a loading spinner for pushing
-  const spinner = ora({
-    text: `Pushing code to branch "${branch}"...`,
-    color: 'cyan',
-    spinner: 'dots',
-  }).start();
-
-  try {
-    await git.push('origin', branch);
-    spinner.succeed(`Successfully pushed to branch "${branch}".`);
-  } catch (error) {
-    spinner.fail('Failed to push code to GitHub.');
-    console.error(chalk.red(error.message));
-  }
 }
 
-// Rest of your code
-async function main() {
-  // Call the other functions as in the original main() function
-  await checkGitignore();
-  const { untrackedFiles, modifiedFiles } = await getGitStatus();
-  console.log(chalk.yellow('Untracked Files:'), formatFiles(untrackedFiles, 'U'));
-  console.log(chalk.yellow('Modified Files:'), formatFiles(modifiedFiles, 'M'));
-
-  const allFiles = [...untrackedFiles, ...modifiedFiles];
-  await promptForAddingFiles(allFiles);
-  await commitChanges();
-  await pushToBranch();
-}
-
-main();
+ask();
