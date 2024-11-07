@@ -4,7 +4,7 @@ import simpleGit from 'simple-git';
 import path from 'path';
 import fs from 'fs';
 import 'inquirer-autocomplete-standalone';
-
+import ora from 'ora';
 const git = simpleGit();
 
 async function checkGitignore() {
@@ -141,16 +141,20 @@ async function pushToBranch() {
     return;
   }
 
+    const spinner = ora({
+    text: `Pushing code to branch "${branch}"...`,
+    color: 'cyan',
+    spinner: 'dots',
+  }).start();
 
   try {
-    console.log(chalk.cyan(`Pushing to branch "${branch}"...`));
     await git.push('origin', branch);
-    console.log(chalk.green(`Successfully pushed to branch "${branch}".`));
+    spinner.succeed(`Successfully pushed to branch "${branch}".`);
   } catch (error) {
-    console.log(chalk.red('Failed to push code to GitHub.'));
+    spinner.fail('Failed to push code to GitHub.');
     console.error(chalk.red(error.message));
   }
-
+  
 
   // await git.push('origin', branch);
   // console.log(chalk.green(`Pushed to branch "${branch}".`));
