@@ -150,14 +150,14 @@ async function pushToBranch() {
 
   try {
     await git.push('origin', branch);
-    spinner.succeed(chalk.green(`Successfully pushed to branch "${branch}".`));
+    // spinner.succeed(chalk.green(`Successfully pushed to branch "${branch}".`));
 
     // Retrieve the latest commit SHA and message
     const log = await git.log({ maxCount: 1 });
     const latestCommit = log.latest;
     const commitInfo = `[${latestCommit.hash.slice(0, 7)}] ${latestCommit.message}`;
 
-    console.log(chalk.green(`\nPushed commit: ${commitInfo}`));
+    console.log(chalk.green(`Pushed commit: ${branch}  ${commitInfo}`));
   } catch (error) {
     spinner.fail(chalk.red('Failed to push code to GitHub.'));
     console.error(chalk.red(error.message));
