@@ -73,19 +73,22 @@ async function promptForAddingFiles(files) {
     default: true,
   });
 
+  const getFileDiffStats = async (file) => {
+    // Get the diff for the specific file
+    const diff = await git.diff([file]);
+
+    // Count the number of insertions and deletions
+    const insertions = (diff.match(/\+/g) || []).length;
+    const deletions = (diff.match(/-/g) || []).length;
+
+    return `${file} [+${insertions}] [-${deletions}]`;
+  };
+
   if (addMethod) {
     await git.add(files);
     const stats = await Promise.all(
       files.map(async (file) => {
-        const diff = await git.diffSummary([file]);
-        const fileDiff = diff.files.find(f => f.file === file);
-        
-        // Check if fileDiff exists before accessing its properties
-        if (fileDiff) {
-          return `${file} [+${fileDiff.insertions}] [-${fileDiff.deletions}]`;
-        } else {
-          return `${file} [No changes found]`;
-        }
+        return await getFileDiffStats(file);
       })
     );
     console.log(chalk.green(`Adding files:\n${stats.join('\n')}`));
@@ -100,15 +103,7 @@ async function promptForAddingFiles(files) {
     await git.add(selectedFiles);
     const stats = await Promise.all(
       selectedFiles.map(async (file) => {
-        const diff = await git.diffSummary([file]);
-        const fileDiff = diff.files.find(f => f.file === file);
-        
-        // Check if fileDiff exists before accessing its properties
-        if (fileDiff) {
-          return `${file} [+${fileDiff.insertions}] [-${fileDiff.deletions}]`;
-        } else {
-          return `${file} [No changes found]`;
-        }
+        return await getFileDiffStats(file);
       })
     );
     console.log(chalk.green(`Adding files:\n${stats.join('\n')}`));
