@@ -18,16 +18,6 @@ const questions = [
   
   
 
-  fgdgfgdhgfhdgfhdgfhdgfhdgfhdgfhgdf
-  
-  
-  
-  
-
-
-  flieksdfdf 
-  
-  
   
 ];
 
