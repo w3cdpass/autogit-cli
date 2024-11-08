@@ -67,7 +67,7 @@ async function getGitStatus() {
 
 async function promptForAddingFiles(files) {
   if (files.length === 0) {
-    console.log(chalk.blue('Project is up to date.'));
+    console.log(chalk.cyanBright('Project is up to date.'));
     return false;  // Return false if there are no files to add
   }
 
