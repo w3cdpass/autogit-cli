@@ -68,7 +68,7 @@ async function getGitStatus() {
 async function promptForAddingFiles(files) {
   if (files.length === 0) {
     console.log(chalk.blue('Project is up to date.'));
-    return;
+    return false;  // Return false if there are no files to add
   }
 
   const { addMethod } = await inquirer.prompt({
@@ -95,9 +95,7 @@ async function promptForAddingFiles(files) {
 
   if (addMethod) {
     await git.add(files);
-    const stats = await Promise.all(
-      files.map(async (file) => await getFileDiffStats(file))
-    );
+    const stats = await Promise.all(files.map(async (file) => await getFileDiffStats(file)));
     console.log(`${chalk.white('Adding files:')}\n${stats.join(', ')}`);
   } else {
     const { selectedFiles } = await inquirer.prompt({
@@ -108,11 +106,11 @@ async function promptForAddingFiles(files) {
       loop: false,
     });
     await git.add(selectedFiles);
-    const stats = await Promise.all(
-      selectedFiles.map(async (file) => await getFileDiffStats(file))
-    );
+    const stats = await Promise.all(selectedFiles.map(async (file) => await getFileDiffStats(file)));
     console.log(`${chalk.white('Adding files:')}\n${stats.join(', ')}`);
   }
+  
+  return true;  // Return true if files were added
 }
 
 async function commitChanges() {
@@ -183,7 +181,7 @@ async function pushToBranch(commitMessage) {
   }
 }
 
-async function startProcess() {
+async function main() {
   try {
     await checkGitignore();
 
@@ -192,10 +190,10 @@ async function startProcess() {
       ...modifiedFiles,
       ...untrackedFiles.filter(file => fs.existsSync(file)),
     ];
-
-    if (filesToDisplay.length > 0) {
-      await promptForAddingFiles(filesToDisplay);
-    }
+    
+    const filesAdded = await promptForAddingFiles(filesToDisplay);
+    
+    if (!filesAdded) return; // If no files were added, exit main function
 
     const commitMessage = await commitChanges();
     await pushToBranch(commitMessage);
@@ -204,4 +202,4 @@ async function startProcess() {
   }
 }
 
-startProcess();
+main();
