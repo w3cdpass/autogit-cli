@@ -66,6 +66,11 @@ async function getGitStatus() {
 }
 
 async function promptForAddingFiles(files) {
+  if (files.length === 0) {
+    console.log(chalk.blue('Project is up to date.'));
+    return;
+  }
+
   const { addMethod } = await inquirer.prompt({
     type: 'confirm',
     name: 'addMethod',
@@ -77,12 +82,10 @@ async function promptForAddingFiles(files) {
     let insertions = 0;
     let deletions = 0;
 
-    // Get unstaged changes (working directory)
     const unstagedDiff = await git.diff([file]);
     insertions += (unstagedDiff.match(/\n\+/g) || []).length;
     deletions += (unstagedDiff.match(/\n-/g) || []).length;
 
-    // Get staged changes (index)
     const stagedDiff = await git.diff(['--cached', file]);
     insertions += (stagedDiff.match(/\n\+/g) || []).length;
     deletions += (stagedDiff.match(/\n-/g) || []).length;
@@ -112,7 +115,6 @@ async function promptForAddingFiles(files) {
   }
 }
 
-
 async function commitChanges() {
   const commitMessages = [
     'Update files',
@@ -130,7 +132,7 @@ async function commitChanges() {
   });
 
   await git.commit(commitMessage);
-  return commitMessage; // Return the message for final display only
+  return commitMessage;
 }
 
 async function pushToBranch(commitMessage) {
@@ -168,12 +170,10 @@ async function pushToBranch(commitMessage) {
     await git.push('origin', branch);
     spinner.stop();
 
-    // Retrieve the latest commit SHA and message
     const log = await git.log({ maxCount: 1 });
     const latestCommit = log.latest;
     const sha = latestCommit.hash.slice(0, 7);
 
-    // Display the final message with formatted output
     console.log(
       `\n{ ${chalk.white('Branch')}: "${chalk.green(branch)}", ${chalk.white('SHA')}: "${chalk.green(sha)}", ${chalk.white('Commit')}: "${chalk.green(commitMessage)}" }`
     );
@@ -183,17 +183,16 @@ async function pushToBranch(commitMessage) {
   }
 }
 
-async function main() {
+async function startProcess() {
   try {
     await checkGitignore();
 
     const { untrackedFiles, modifiedFiles } = await getGitStatus();
-
     const filesToDisplay = [
       ...modifiedFiles,
       ...untrackedFiles.filter(file => fs.existsSync(file)),
     ];
-    
+
     if (filesToDisplay.length > 0) {
       await promptForAddingFiles(filesToDisplay);
     }
@@ -205,9 +204,4 @@ async function main() {
   }
 }
 
-main();
-
-
-
-
-
+startProcess();
