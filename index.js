@@ -174,6 +174,7 @@ async function pushToBranch(commitMessage) {
 
     
 
+
     console.log(
       `\n{ ${chalk.white('Branch')}: "${chalk.green(branch)}", ${chalk.white('SHA')}: "${chalk.green(sha)}", ${chalk.white('Commit')}: "${chalk.green(commitMessage)}" }`
     );
