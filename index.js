@@ -164,7 +164,7 @@ async function pushToBranch(commitMessage) {
     text: `Pushing code to branch "${branch}"...`,
     color: 'white',
     spinner: 'dots',
-    interval: 90,
+    // interval: 90,
   }).start();
 
 
