@@ -18,7 +18,7 @@ async function saveGitHistory() {
     
     const historyPath = path.join(path.resolve('.'), 'git_history.json');
     fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
-    console.log(chalk.green(`Git history saved to ${historyPath}`));
+    console.log((`Git history saved to ${chalk.bgGray(historyPath)}`));
   } catch (error) {
     console.error(chalk.red(`Failed to fetch Git history: ${error.message}`));
   }
