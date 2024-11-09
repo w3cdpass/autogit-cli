@@ -134,6 +134,7 @@ async function commitChanges() {
   return commitMessage;
 }
 
+
 async function pushToBranch(commitMessage) {
   const remotes = await git.getRemotes();
   const remoteNames = remotes.map(remote => remote.name);
@@ -167,7 +168,7 @@ async function pushToBranch(commitMessage) {
 
 
 
-  
+
 
   try {
     await git.push('origin', branch);
