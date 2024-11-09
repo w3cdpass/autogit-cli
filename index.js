@@ -78,7 +78,7 @@ async function promptForAddingFiles(files) {
     default: true,
   });
 
-  
+
   const getFileDiffStats = async (file) => {
     let insertions = 0;
     let deletions = 0;
@@ -162,7 +162,7 @@ async function pushToBranch(commitMessage) {
   const spinner = ora({
     text: `Pushing code to branch "${branch}"...`,
     color: 'white',
-    // spinner: 'dots',
+    spinner: 'dots',
   }).start();
 
   try {
