@@ -160,7 +160,7 @@ async function pushToBranch(commitMessage) {
 
   const spinner = ora({
     text: `Pushing code to branch "${branch}"...`,
-    color: 'cyan',
+    // color: 'cyan',
     // spinner: 'dots',
   }).start();
 
