@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import simpleGit from 'simple-git';
@@ -24,10 +26,8 @@ async function saveGitHistory() {
   }
 }
 
-// Check if the -h argument is passed
 const args = process.argv.slice(2);
 if (args.includes('-h')) {
-  // If -h is passed, save Git history and exit
   await saveGitHistory();
   process.exit(0);
 }
@@ -41,6 +41,7 @@ async function checkGitignore() {
     '*.log',
     'coverage/',
     '.DS_Store',
+    'git_history.json'
   ];
 
   let createGitignore = false;
@@ -136,7 +137,7 @@ async function promptForAddingFiles(files) {
     console.log(`${chalk.white('Adding files:')}\n${stats.join(', ')}`);
   }
   
-  return true;  // Return true if files were added
+  return true;  
 }
 
 async function commitChanges() {
@@ -237,8 +238,3 @@ async function main() {
 }
 
 main();
-
-
-
-
-
