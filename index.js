@@ -172,6 +172,8 @@ async function pushToBranch(commitMessage) {
     const latestCommit = log.latest;
     const sha = latestCommit.hash.slice(0, 7);
 
+    
+
     console.log(
       `\n{ ${chalk.white('Branch')}: "${chalk.green(branch)}", ${chalk.white('SHA')}: "${chalk.green(sha)}", ${chalk.white('Commit')}: "${chalk.green(commitMessage)}" }`
     );
