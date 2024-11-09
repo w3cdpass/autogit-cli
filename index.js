@@ -166,6 +166,7 @@ async function pushToBranch(commitMessage) {
   }).start();
 
   
+
   try {
     await git.push('origin', branch);
     spinner.stop();
