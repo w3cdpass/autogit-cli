@@ -78,6 +78,7 @@ async function promptForAddingFiles(files) {
     default: true,
   });
 
+  
   const getFileDiffStats = async (file) => {
     let insertions = 0;
     let deletions = 0;
@@ -172,7 +173,7 @@ async function pushToBranch(commitMessage) {
     const latestCommit = log.latest;
     const sha = latestCommit.hash.slice(0, 7);
 
-    
+
 
 
     console.log(
