@@ -7,6 +7,31 @@ import ora from 'ora';
 
 const git = simpleGit();
 
+async function saveGitHistory() {
+  try {
+    const log = await git.log();
+    const history = log.all.map(commit => ({    hash: commit.hash,
+      date: commit.date,
+      message: commit.message,
+      author: commit.author_name,
+    }));
+    
+    const historyPath = path.join(path.resolve('.'), 'git_history.json');
+    fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
+    console.log(chalk.green(`Git history saved to ${historyPath}`));
+  } catch (error) {
+    console.error(chalk.red(`Failed to fetch Git history: ${error.message}`));
+  }
+}
+
+// Check if the -h argument is passed
+const args = process.argv.slice(2);
+if (args.includes('-h')) {
+  // If -h is passed, save Git history and exit
+  await saveGitHistory();
+  process.exit(0);
+}
+
 async function checkGitignore() {
   const gitignorePath = path.join(path.resolve('.'), '.gitignore');
   const commonIgnoredFiles = [
@@ -164,7 +189,6 @@ async function pushToBranch(commitMessage) {
     text: `Pushing code to branch "${branch}"...`,
     color: 'white',
     spinner: 'dots',
-    // interval: 90,
   }).start();
 
 
@@ -201,9 +225,9 @@ async function main() {
       ...untrackedFiles.filter(file => fs.existsSync(file)),
     ];
     
-    const filesAdded = await promptForAddingFiles(filesToDisplay);
-    
-    if (!filesAdded) return; // If no files were added, exit main function
+    if (filesToDisplay.length > 0) {
+      await promptForAddingFiles(filesToDisplay);
+    }
 
     const commitMessage = await commitChanges();
     await pushToBranch(commitMessage);
