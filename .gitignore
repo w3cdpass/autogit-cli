@@ -2,7 +2,7 @@ node_modules/
 dist/
 .env
 *.log
-
 coverage/
 .DS_Store
 todo
+git_history.json
